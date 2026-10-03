@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Configuración{% endblock %}
+{% block content %}
+<div class="head"><div><h1>Configuración</h1><p>Datos de la organización y seguridad</p></div></div>
+<div class="grid g2" style="align-items:start">
+<form method="post" class="card"><input type="hidden" name="accion" value="datos">
+  <h3>Organización</h3><div class="sub">El nombre sale en los recibos y en el menú</div>
+  <label>Nombre de la organización</label><input name="organizacion" value="{{ org }}" required>
+  <label>Cuota mensual por defecto ($)</label><input name="cuota" value="{{ cuota }}" required>
+  <button class="btn">Guardar cambios</button></form>
+<form method="post" class="card"><input type="hidden" name="accion" value="clave">
+  <h3>Cambiar contraseña</h3><div class="sub">Mínimo 6 caracteres</div>
+  <label>Contraseña actual</label><input type="password" name="actual" required>
+  <label>Nueva contraseña</label><input type="password" name="nueva" required>
+  <button class="btn">Cambiar contraseña</button></form>
+</div>
+{% endblock %}

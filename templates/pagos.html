@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Pagos{% endblock %}
+{% block content %}
+<div class="head">
+  <div><h1>Pagos y recibos</h1><p>{{ mes|mes_largo }} · Total recaudado <b class="pos">{{ total|money }}</b></p></div>
+  <form method="get" style="flex:none"><input type="month" name="mes" value="{{ mes }}" style="margin:0" onchange="this.form.submit()"></form>
+  <a class="btn" href="{{ url_for('pago_nuevo') }}"><svg class="ic"><use href="#i-plus"/></svg>Registrar pago</a>
+</div>
+<div class="card"><div class="wrap"><table class="tbl">
+  <thead><tr><th>Recibo</th><th>Socio</th><th>Concepto</th><th>Fecha</th><th>Forma</th><th class="r">Monto</th><th></th></tr></thead>
+  <tbody>{% for p in lista %}
+  <tr class="{{ 'anulado' if p.anulado }}">
+    <td><b>N.º {{ '%06d'|format(p.id) }}</b></td>
+    <td><div class="who"><span class="av">{{ (p.nombres[:1] ~ p.apellidos[:1])|upper }}</span><span><b>{{ p.apellidos }} {{ p.nombres }}</b><small>{{ p.cedula }}</small></span></div></td>
+    <td>{{ p.concepto }}</td><td>{{ p.fecha|fdate }}</td><td><span class="badge gray">{{ p.forma_pago|capitalize }}</span></td>
+    <td class="r pos">{{ p.monto|money }}</td>
+    <td class="r"><a href="{{ url_for('recibo', pid=p.id) }}" target="_blank">Recibo</a>
+      {% if not p.anulado %}
+      <form method="post" action="{{ url_for('pago_anular', pid=p.id) }}" style="display:inline" onsubmit="return confirm('¿Anular este recibo?')">
+        <button style="border:0;background:none;color:#e11d48;cursor:pointer;font:inherit;padding:0 0 0 10px">Anular</button></form>{% endif %}</td>
+  </tr>
+  {% else %}<tr><td colspan="7" class="vacio">No hay pagos en este mes.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

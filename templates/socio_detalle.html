@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ s.apellidos }}{% endblock %}
+{% block content %}
+{% set tot = asis.get('presente',0) + asis.get('falta',0) + asis.get('justificada',0) %}
+<div class="head">
+  <div class="who"><span class="av" style="width:56px;height:56px;font-size:18px">{{ (s.nombres[:1] ~ s.apellidos[:1])|upper }}</span>
+    <div><h1 style="font-size:24px">{{ s.apellidos }} {{ s.nombres }}</h1><p>Cédula {{ s.cedula }} · {{ s.comunidad }} · Tel. {{ s.telefono }}</p></div></div>
+  <a class="btn ghost" href="{{ url_for('socio_form', sid=s.id) }}">Editar</a>
+  <a class="btn" href="{{ url_for('pago_nuevo', socio_id=s.id) }}"><svg class="ic"><use href="#i-plus"/></svg>Registrar pago</a>
+</div>
+<div class="grid g4">
+  <div class="card kpi"><div><small>Estado</small><div class="n" style="font-size:20px">{{ s.estado|capitalize }}</div></div></div>
+  <div class="card kpi"><div><small>Ingreso a la organización</small><div class="n" style="font-size:20px">{{ s.fecha_ingreso|fdate }}</div></div></div>
+  <div class="card kpi"><div><small>Asistencia</small><div class="n" style="font-size:20px">{{ ((asis.get('presente',0) / tot * 100)|round|int) if tot else 0 }}%</div>
+    <small>{{ asis.get('presente',0) }} presente · {{ asis.get('falta',0) }} faltas · {{ asis.get('justificada',0) }} justif.</small></div></div>
+</div>
+<div class="card"><h3>Historial de pagos</h3><div class="sub">Todos los recibos de este socio</div>
+<div class="wrap"><table class="tbl">
+  <thead><tr><th>Recibo</th><th>Mes</th><th>Concepto</th><th class="r">Monto</th><th>Fecha</th><th></th></tr></thead>
+  <tbody>{% for p in pagos %}
+  <tr class="{{ 'anulado' if p.anulado }}"><td>N.º {{ '%06d'|format(p.id) }}</td><td>{{ p.mes|mes_largo }}</td><td>{{ p.concepto }}</td>
+    <td class="r">{{ p.monto|money }}</td><td>{{ p.fecha|fdate }}</td><td class="r"><a href="{{ url_for('recibo', pid=p.id) }}" target="_blank">Ver recibo</a></td></tr>
+  {% else %}<tr><td colspan="6" class="vacio">Sin pagos registrados.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

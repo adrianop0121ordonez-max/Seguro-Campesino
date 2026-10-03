@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Asistencias{% endblock %}
+{% block content %}
+<div class="head"><div><h1>Reuniones y asistencia</h1><p>Crea una reunión, asamblea o minga y marca quién asistió</p></div></div>
+<form method="post" class="card" style="margin-bottom:18px">
+  <div class="row">
+    <div><label>Fecha</label><input type="date" name="fecha" value="{{ hoy }}" required></div>
+    <div style="flex:2"><label>Título</label><input name="titulo" placeholder="Ej: Asamblea general de octubre" required></div>
+    <div><label>Tipo</label><select name="tipo"><option value="reunion">Reunión</option><option value="asamblea">Asamblea</option>
+      <option value="minga">Minga</option><option value="otro">Otro</option></select></div>
+    <button class="btn"><svg class="ic"><use href="#i-plus"/></svg>Crear</button>
+  </div>
+</form>
+<div class="card"><div class="wrap"><table class="tbl">
+  <thead><tr><th>Fecha</th><th>Título</th><th>Tipo</th><th>Presentes</th><th></th></tr></thead>
+  <tbody>{% for r in lista %}
+  <tr><td>{{ r.fecha|fdate }}</td><td><b>{{ r.titulo }}</b></td><td><span class="badge gray">{{ r.tipo|capitalize }}</span></td>
+    <td>{{ r.presentes }}</td><td class="r"><a href="{{ url_for('reunion', rid=r.id) }}">Tomar / ver asistencia →</a></td></tr>
+  {% else %}<tr><td colspan="5" class="vacio">Aún no hay reuniones.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

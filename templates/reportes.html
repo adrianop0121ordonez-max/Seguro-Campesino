@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Reportes{% endblock %}
+{% block content %}
+<div class="head">
+  <div><h1>Reportes</h1><p>{{ mes|mes_largo }}</p></div>
+  <form method="get" class="noprint" style="flex:none"><input type="month" name="mes" value="{{ mes }}" style="margin:0" onchange="this.form.submit()"></form>
+  <button class="btn ghost noprint" onclick="window.print()"><svg class="ic"><use href="#i-print"/></svg>Imprimir</button>
+</div>
+<div class="grid g4">
+  <div class="card kpi"><div class="ico v"><svg class="ic"><use href="#i-up"/></svg></div><div><small>Recaudado en cuotas</small><div class="n">{{ recaudado|money }}</div></div></div>
+  <div class="card kpi"><div class="ico r"><svg class="ic"><use href="#i-users"/></svg></div><div><small>Socios sin pagar</small><div class="n">{{ deudores|length }}</div>
+    {% if cuota %}<span class="delta neu">≈ {{ (deudores|length * cuota)|money }} pendientes</span>{% endif %}</div></div>
+</div>
+<div class="card" style="margin-bottom:18px"><h3>Socios que no han pagado la cuota</h3><div class="sub">{{ mes|mes_largo }}</div>
+<div class="wrap"><table class="tbl">
+  <thead><tr><th>Socio</th><th>Cédula</th><th>Comunidad</th><th>Teléfono</th><th class="noprint"></th></tr></thead>
+  <tbody>{% for s in deudores %}
+  <tr><td><div class="who"><span class="av">{{ (s.nombres[:1] ~ s.apellidos[:1])|upper }}</span><b>{{ s.apellidos }} {{ s.nombres }}</b></div></td>
+    <td>{{ s.cedula }}</td><td>{{ s.comunidad }}</td><td>{{ s.telefono }}</td>
+    <td class="r noprint"><a href="{{ url_for('pago_nuevo', socio_id=s.id) }}">Cobrar</a></td></tr>
+  {% else %}<tr><td colspan="5" class="vacio">Todos los socios activos están al día 🎉</td></tr>{% endfor %}</tbody>
+</table></div></div>
+<div class="card"><h3>Asistencia por socio</h3><div class="sub">Acumulado de todas las reuniones</div>
+<div class="wrap"><table class="tbl">
+  <thead><tr><th>Socio</th><th>Presente</th><th>Faltas</th><th>Justificadas</th><th style="width:200px">Porcentaje</th></tr></thead>
+  <tbody>{% for r in resumen %}
+  {% set t = (r.presentes or 0) + (r.faltas or 0) + (r.justificadas or 0) %}{% set pc = ((r.presentes or 0) / t * 100)|round|int if t else 0 %}
+  <tr><td><b>{{ r.apellidos }} {{ r.nombres }}</b></td><td>{{ r.presentes or 0 }}</td><td>{{ r.faltas or 0 }}</td><td>{{ r.justificadas or 0 }}</td>
+    <td><div style="display:flex;gap:10px;align-items:center"><div class="bar" style="flex:1"><i style="width:{{ pc }}%"></i></div><b>{{ pc }}%</b></div></td></tr>
+  {% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Socio{% endblock %}
+{% block content %}
+<div class="head"><div><h1>{{ 'Editar socio' if s else 'Nuevo socio' }}</h1><p>Datos personales y de la organización</p></div></div>
+<form method="post" class="card" style="max-width:760px">
+  <div class="row">
+    <div><label>Cédula</label><input name="cedula" value="{{ s.cedula if s }}" required maxlength="10"></div>
+    <div><label>Teléfono</label><input name="telefono" value="{{ s.telefono or '' if s }}"></div>
+  </div>
+  <div class="row">
+    <div><label>Nombres</label><input name="nombres" value="{{ s.nombres if s }}" required></div>
+    <div><label>Apellidos</label><input name="apellidos" value="{{ s.apellidos if s }}" required></div>
+  </div>
+  <div class="row">
+    <div><label>Comunidad / comité</label><input name="comunidad" value="{{ s.comunidad or '' if s }}"></div>
+    <div><label>Fecha de ingreso</label><input type="date" name="fecha_ingreso" value="{{ s.fecha_ingreso if s else hoy }}"></div>
+    <div><label>Estado</label><select name="estado">
+      <option value="activo" {{ 'selected' if s and s.estado=='activo' }}>Activo</option>
+      <option value="inactivo" {{ 'selected' if s and s.estado=='inactivo' }}>Inactivo</option></select></div>
+  </div>
+  <button class="btn">Guardar</button> <a class="btn ghost" href="{{ url_for('socios') }}">Cancelar</a>
+</form>
+{% endblock %}

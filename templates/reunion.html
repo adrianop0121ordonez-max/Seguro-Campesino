@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Asistencia{% endblock %}
+{% block content %}
+<div class="head"><div><h1>{{ r.titulo }}</h1><p>{{ r.fecha|fdate }} · {{ r.tipo|capitalize }}</p></div>
+  <button type="button" class="btn ghost" onclick="document.querySelectorAll('input.pr').forEach(i=>i.checked=true)">Marcar todos presentes</button></div>
+<form method="post" class="card">
+<div class="wrap"><table class="tbl">
+  <thead><tr><th>Socio</th><th>Comunidad</th><th>Asistencia</th></tr></thead>
+  <tbody>{% for s in lista %}
+  <tr>
+    <td><div class="who"><span class="av">{{ (s.nombres[:1] ~ s.apellidos[:1])|upper }}</span><span><b>{{ s.apellidos }} {{ s.nombres }}</b><small>{{ s.cedula }}</small></span></div></td>
+    <td>{{ s.comunidad }}</td>
+    <td><div class="seg">
+      <input class="pr" type="radio" name="socio_{{ s.id }}" id="p{{ s.id }}" value="presente" {{ 'checked' if s.estado == 'presente' }}><label class="p" for="p{{ s.id }}">Presente</label>
+      <input type="radio" name="socio_{{ s.id }}" id="f{{ s.id }}" value="falta" {{ 'checked' if s.estado in (None, 'falta') }}><label class="f" for="f{{ s.id }}">Falta</label>
+      <input type="radio" name="socio_{{ s.id }}" id="j{{ s.id }}" value="justificada" {{ 'checked' if s.estado == 'justificada' }}><label class="j" for="j{{ s.id }}">Justificada</label>
+    </div></td>
+  </tr>
+  {% else %}<tr><td colspan="3" class="vacio">No hay socios activos.</td></tr>{% endfor %}</tbody>
+</table></div>
+<div style="margin-top:18px"><button class="btn">Guardar asistencia</button> <a class="btn ghost" href="{{ url_for('reuniones') }}">Volver</a></div>
+</form>
+{% endblock %}

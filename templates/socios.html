@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Socios{% endblock %}
+{% block content %}
+<div class="head">
+  <div><h1>Socios</h1><p>{{ lista|length }} registrados</p></div>
+  <a class="btn" href="{{ url_for('socio_form') }}"><svg class="ic"><use href="#i-plus"/></svg>Nuevo socio</a>
+</div>
+<div class="card">
+  <form class="row" method="get"><input name="q" value="{{ q }}" placeholder="Buscar por cédula, nombre, apellido o comunidad">
+    <button class="btn ghost">Buscar</button></form>
+  <div class="wrap"><table class="tbl">
+    <thead><tr><th>Socio</th><th>Cédula</th><th>Comunidad</th><th>Teléfono</th><th>Cuota del mes</th><th></th></tr></thead>
+    <tbody>
+    {% for s in lista %}
+    <tr>
+      <td><a class="who" href="{{ url_for('socio_detalle', sid=s.id) }}" style="color:inherit"><span class="av">{{ (s.nombres[:1] ~ s.apellidos[:1])|upper }}</span>
+        <span><b>{{ s.apellidos }} {{ s.nombres }}</b>{% if s.estado != 'activo' %}<small>Inactivo</small>{% endif %}</span></a></td>
+      <td>{{ s.cedula }}</td><td>{{ s.comunidad }}</td><td>{{ s.telefono }}</td>
+      <td>{% if s.estado != 'activo' %}<span class="badge gray">—</span>
+          {% elif s.al_dia %}<span class="badge ok">Al día</span>{% else %}<span class="badge no">Pendiente</span>{% endif %}</td>
+      <td class="r"><a href="{{ url_for('pago_nuevo', socio_id=s.id) }}">Cobrar</a> · <a href="{{ url_for('socio_form', sid=s.id) }}">Editar</a></td>
+    </tr>
+    {% else %}<tr><td colspan="6" class="vacio">No hay socios registrados.</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% endblock %}

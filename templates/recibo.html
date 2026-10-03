@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Recibo {{ '%06d'|format(p.id) }}</title>
+<style>
+ @page{margin:8mm}
+ *{box-sizing:border-box}
+ body{font-family:Inter,"Segoe UI",system-ui,Arial,sans-serif;margin:0;padding:18px;color:#12251a;background:#eef2ef}
+ .barra{max-width:720px;margin:0 auto 14px;display:flex;gap:8px}
+ .barra a,.barra button{background:#15803d;color:#fff;border:0;padding:9px 16px;border-radius:11px;text-decoration:none;cursor:pointer;font-family:inherit;font-weight:600;font-size:14px}
+ .barra a.g{background:#fff;color:#12251a;border:1px solid #d5ddd8}
+ .rec{background:#fff;border:1px solid #cfd9d3;border-radius:14px;margin:0 auto 16px;max-width:720px;position:relative;overflow:hidden}
+ .rec .top{background:linear-gradient(135deg,#0f3a25,#15803d);color:#fff;padding:14px 22px;display:flex;justify-content:space-between;align-items:center}
+ .rec .top h1{margin:0;font-size:17px;letter-spacing:.01em}.rec .top small{opacity:.8;font-size:12px;letter-spacing:.14em}
+ .rec .cuerpo{padding:16px 22px 18px}
+ .cab{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:14px;color:#6b7a72}
+ .num{font-size:20px;font-weight:700;color:#b91c1c}
+ table{width:100%;border-collapse:collapse;font-size:14px}
+ td{padding:6px 0;border-bottom:1px dashed #dfe6e1;vertical-align:top}td.k{width:30%;color:#6b7a72}td:last-child{font-weight:600}
+ .pie{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:12px}
+ .letras{font-size:12px;color:#3d5246;flex:1}
+ .total{font-size:22px;font-weight:700;background:#ecfdf3;border:2px solid #16a34a;color:#14532d;padding:6px 16px;border-radius:12px;white-space:nowrap}
+ .firmas{display:flex;justify-content:space-around;margin-top:38px;font-size:12px;color:#52625a}
+ .firmas div{border-top:1px solid #12251a;padding-top:4px;width:40%;text-align:center}
+ .tipo{position:absolute;top:50px;right:14px;font-size:10px;letter-spacing:.12em;color:#8a9a91}
+ .anul{position:absolute;top:32%;left:22%;font-size:64px;color:#dc2626;opacity:.3;transform:rotate(-14deg);font-weight:800;border:6px solid #dc2626;padding:0 16px;border-radius:12px}
+ body.ticket .rec{max-width:72mm;border-radius:0;border:0;border-bottom:1px dashed #000;margin-bottom:6px}
+ body.ticket .top{background:none;color:#000;padding:4px 2px;display:block;text-align:center}
+ body.ticket .top small{display:none}body.ticket .cuerpo{padding:4px 2px}body.ticket table,body.ticket .cab{font-size:12px}
+ body.ticket .pie{display:block}body.ticket .total{display:inline-block;margin-top:6px;font-size:18px}
+ body.ticket .firmas{margin-top:22px}body.ticket .firmas div{width:80%}body.ticket .firmas div+div{display:none}body.ticket .tipo{top:2px}
+ @media print{.barra{display:none}body{padding:0;background:#fff}.rec{border-color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body class="{{ 'ticket' if formato == 'ticket' else '' }}">
+<div class="barra">
+  <button onclick="window.print()">🖨 Imprimir</button>
+  <a class="g" href="?formato={{ 'a4' if formato == 'ticket' else 'ticket' }}">{{ 'Formato hoja' if formato == 'ticket' else 'Formato ticket' }}</a>
+  <a class="g" href="{{ url_for('pagos', mes=p.mes) }}">Volver</a>
+</div>
+{% for copia in (['ORIGINAL', 'COPIA'] if formato != 'ticket' else ['ORIGINAL']) %}
+<div class="rec">
+  <div class="top"><h1>{{ org }}</h1><small>RECIBO DE PAGO</small></div>
+  <span class="tipo">{{ copia }}</span>
+  {% if p.anulado %}<div class="anul">ANULADO</div>{% endif %}
+  <div class="cuerpo">
+    <div class="cab"><span>Recibo N.º <span class="num">{{ '%06d'|format(p.id) }}</span></span><span>Fecha: {{ p.fecha|fdate }}</span></div>
+    <table>
+      <tr><td class="k">Recibimos de</td><td>{{ p.apellidos }} {{ p.nombres }}</td></tr>
+      <tr><td class="k">Cédula</td><td>{{ p.cedula }}</td></tr>
+      {% if p.comunidad %}<tr><td class="k">Comunidad</td><td>{{ p.comunidad }}</td></tr>{% endif %}
+      <tr><td class="k">Concepto</td><td>{{ p.concepto }} — {{ p.mes|mes_largo }}</td></tr>
+      <tr><td class="k">Forma de pago</td><td>{{ p.forma_pago|capitalize }}</td></tr>
+      {% if p.observacion %}<tr><td class="k">Observación</td><td>{{ p.observacion }}</td></tr>{% endif %}
+    </table>
+    <div class="pie"><div class="letras"><b>SON:</b> {{ letras }}</div><div class="total">{{ p.monto|money }}</div></div>
+    <div class="firmas"><div>Recibí conforme (Tesorero/a)</div><div>Socio/a</div></div>
+  </div>
+</div>
+{% endfor %}
+</body>
+</html>

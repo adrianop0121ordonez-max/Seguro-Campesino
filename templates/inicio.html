@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Inicio{% endblock %}
+{% block content %}
+<div class="head">
+  <div><h1>Resumen general</h1><p>{{ mes|mes_largo }}</p></div>
+  <a class="btn ghost" href="{{ url_for('pago_nuevo') }}"><svg class="ic"><use href="#i-plus"/></svg>Registrar pago</a>
+  <a class="btn" href="{{ url_for('finanzas') }}"><svg class="ic"><use href="#i-flow"/></svg>Ingresos y gastos</a>
+</div>
+
+<div class="grid g4">
+  <div class="card kpi"><div class="ico v"><svg class="ic"><use href="#i-up"/></svg></div><div>
+    <small>Ingresos del mes</small><div class="n">{{ ingresos|money }}</div>
+    {% if var_ing is none %}<span class="delta neu">sin mes previo</span>
+    {% else %}<span class="delta {{ 'up' if var_ing >= 0 else 'down' }}">{{ '▲' if var_ing >= 0 else '▼' }} {{ var_ing|abs }}% vs. mes ant.</span>{% endif %}</div></div>
+  <div class="card kpi"><div class="ico r"><svg class="ic"><use href="#i-down"/></svg></div><div>
+    <small>Gastos del mes</small><div class="n">{{ gastos|money }}</div>
+    {% if var_gas is none %}<span class="delta neu">sin mes previo</span>
+    {% else %}<span class="delta {{ 'down' if var_gas > 0 else 'up' }}">{{ '▲' if var_gas >= 0 else '▼' }} {{ var_gas|abs }}% vs. mes ant.</span>{% endif %}</div></div>
+  <div class="card kpi"><div class="ico b"><svg class="ic"><use href="#i-wallet"/></svg></div><div>
+    <small>Saldo en caja</small><div class="n">{{ saldo|money }}</div>
+    <span class="delta neu">Balance del mes: {{ (ingresos - gastos)|money }}</span></div></div>
+  <div class="card kpi"><div class="ico a"><svg class="ic"><use href="#i-users"/></svg></div><div>
+    <small>Socios activos</small><div class="n">{{ activos }}</div>
+    <span class="delta {{ 'down' if pendientes else 'up' }}">{{ pendientes }} sin pagar</span></div></div>
+</div>
+
+<div class="grid g3">
+  <div class="card">
+    <h3>Ingresos vs. gastos</h3><div class="sub">Últimos 6 meses</div>
+    <div class="lg"><span><i style="background:#16a34a"></i>Ingresos</span><span><i style="background:#e11d48"></i>Gastos</span></div>
+    <div id="c_barras" class="chart"></div>
+  </div>
+  <div class="card">
+    <h3>Cuotas cobradas</h3><div class="sub">{{ pagaron }} de {{ activos }} socios pagaron en {{ mes|mes_largo }}</div>
+    <div id="c_anillo" class="chart"></div>
+    <div style="text-align:center;margin-top:10px"><a href="{{ url_for('reportes') }}">Ver quién falta →</a></div>
+  </div>
+</div>
+
+<div class="grid g31">
+  <div class="card">
+    <h3>Gastos por categoría</h3><div class="sub">{{ mes|mes_largo }}</div>
+    <div id="c_dona" class="chart"></div>
+  </div>
+  <div class="card">
+    <h3>Últimos movimientos</h3><div class="sub">Ingresos y gastos más recientes</div>
+    <div class="wrap"><table class="tbl">
+      {% for m in recientes %}
+      <tr>
+        <td><b>{{ m.descripcion }}</b><br><small style="color:var(--muted)">{{ m.categoria }} · {{ m.fecha|fdate }}</small></td>
+        <td class="r {{ 'pos' if m.tipo == 'ingreso' else 'neg' }}">{{ '+' if m.tipo == 'ingreso' else '−' }} {{ m.monto|money }}</td>
+      </tr>
+      {% else %}<tr><td class="vacio">Todavía no hay movimientos.</td></tr>{% endfor %}
+    </table></div>
+  </div>
+</div>
+
+{% include "_charts.html" %}
+<script>
+const S={{ serie|tojson }};
+barChart('c_barras',S.labels,[{name:'Ingresos',color:'#16a34a',data:S.ingresos},{name:'Gastos',color:'#e11d48',data:S.gastos}]);
+ring('c_anillo',{{ (pagaron / activos * 100) if activos else 0 }},'al día');
+donut('c_dona',{{ cats|tojson }},'gastado');
+</script>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Ingresos y gastos{% endblock %}
+{% block content %}
+<div class="head">
+  <div><h1>Ingresos y gastos</h1><p>{{ mes|mes_largo }}</p></div>
+  <form method="get" class="row noprint" style="flex:none;align-items:center"><input type="month" name="mes" value="{{ mes }}" style="margin:0" onchange="this.form.submit()"></form>
+  <button class="btn ghost noprint" onclick="window.print()"><svg class="ic"><use href="#i-print"/></svg>Imprimir</button>
+</div>
+
+<div class="grid g4">
+  <div class="card kpi"><div class="ico v"><svg class="ic"><use href="#i-card"/></svg></div><div><small>Cuotas de socios</small><div class="n">{{ cuotas|money }}</div></div></div>
+  <div class="card kpi"><div class="ico b"><svg class="ic"><use href="#i-up"/></svg></div><div><small>Otros ingresos</small><div class="n">{{ otros|money }}</div></div></div>
+  <div class="card kpi"><div class="ico r"><svg class="ic"><use href="#i-down"/></svg></div><div><small>Gastos</small><div class="n">{{ gastos|money }}</div></div></div>
+  <div class="card kpi"><div class="ico {{ 'v' if cuotas + otros - gastos >= 0 else 'r' }}"><svg class="ic"><use href="#i-wallet"/></svg></div><div>
+    <small>Balance del mes</small><div class="n {{ 'pos' if cuotas + otros - gastos >= 0 else 'neg' }}">{{ (cuotas + otros - gastos)|money }}</div>
+    <span class="delta neu">Saldo en caja: {{ saldo|money }}</span></div></div>
+</div>
+
+<div class="grid g3">
+  <div class="card">
+    <h3>Ingresos vs. gastos</h3><div class="sub">Últimos 12 meses</div>
+    <div class="lg"><span><i style="background:#16a34a"></i>Ingresos</span><span><i style="background:#e11d48"></i>Gastos</span></div>
+    <div id="c_barras" class="chart"></div>
+  </div>
+  <div class="card">
+    <h3>Gastos por categoría</h3><div class="sub">{{ mes|mes_largo }}</div>
+    <div id="c_dona" class="chart"></div>
+  </div>
+</div>
+
+<div class="grid g12">
+  <form method="post" action="{{ url_for('movimiento_nuevo') }}" class="card noprint">
+    <h3>Nuevo movimiento</h3><div class="sub">Las cuotas de socios entran solas desde “Pagos”.</div>
+    <div class="tabs">
+      <input type="radio" name="tipo" id="t_g" value="gasto" checked onchange="cats()"><label for="t_g">Gasto</label>
+      <input type="radio" name="tipo" id="t_i" value="ingreso" onchange="cats()"><label for="t_i">Ingreso</label>
+    </div>
+    <label>Fecha</label><input type="date" name="fecha" value="{{ hoy }}" required>
+    <label>Categoría</label><select name="categoria" id="categoria"></select>
+    <label>Descripción</label><input name="descripcion" placeholder="Ej: Compra de resmas y tinta" required>
+    <div class="row"><div><label>Monto ($)</label><input name="monto" required placeholder="0.00"></div>
+      <div><label>N.º factura (opcional)</label><input name="comprobante"></div></div>
+    <button class="btn" style="width:100%;justify-content:center"><svg class="ic"><use href="#i-plus"/></svg>Guardar movimiento</button>
+  </form>
+
+  <div class="card">
+    <h3>Movimientos del mes</h3><div class="sub">Todos los ingresos y gastos de {{ mes|mes_largo }}</div>
+    <div class="wrap"><table class="tbl">
+      <thead><tr><th>Fecha</th><th>Detalle</th><th>Tipo</th><th class="r">Monto</th><th class="noprint"></th></tr></thead>
+      <tbody>
+      {% for f in filas %}
+      <tr class="{{ 'anulado' if f.anulado }}">
+        <td>{{ f.fecha|fdate }}</td>
+        <td><b>{{ f.descripcion }}</b><br><small style="color:var(--muted)">{{ f.categoria }}{% if f.comprobante %} · Fact. {{ f.comprobante }}{% endif %}</small></td>
+        <td><span class="badge {{ 'ok' if f.tipo == 'ingreso' else 'no' }}">{{ 'Ingreso' if f.tipo == 'ingreso' else 'Gasto' }}</span></td>
+        <td class="r {{ 'pos' if f.tipo == 'ingreso' else 'neg' }}">{{ '+' if f.tipo == 'ingreso' else '−' }} {{ f.monto|money }}</td>
+        <td class="noprint r">
+          {% if f.origen == 'pago' %}<a href="{{ url_for('recibo', pid=f.id) }}" target="_blank">Recibo</a>
+          {% elif not f.anulado %}
+          <form method="post" action="{{ url_for('movimiento_anular', mid=f.id) }}" style="display:inline" onsubmit="return confirm('¿Anular este movimiento?')">
+            <button style="border:0;background:none;color:#e11d48;cursor:pointer;font:inherit;padding:0">Anular</button></form>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}<tr><td colspan="5" class="vacio">No hay movimientos en este mes.</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+{% include "_charts.html" %}
+<script>
+const S={{ serie|tojson }};
+barChart('c_barras',S.labels,[{name:'Ingresos',color:'#16a34a',data:S.ingresos},{name:'Gastos',color:'#e11d48',data:S.gastos}]);
+donut('c_dona',{{ cats|tojson }},'gastado');
+const CG={{ cat_gasto|tojson }}, CI={{ cat_ingreso|tojson }};
+function cats(){const ing=document.getElementById('t_i').checked;const sel=document.getElementById('categoria');
+  sel.innerHTML='';(ing?CI:CG).forEach(c=>{const o=document.createElement('option');o.textContent=c;sel.appendChild(o);});}
+cats();
+</script>
+{% endblock %}

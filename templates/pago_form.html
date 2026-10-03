@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Registrar pago{% endblock %}
+{% block content %}
+<div class="head"><div><h1>Registrar pago</h1><p>Al guardar se genera el recibo para imprimir</p></div></div>
+<form method="post" class="card" style="max-width:760px">
+  <label>Socio</label>
+  <select name="socio_id" required><option value="">— Selecciona un socio —</option>
+    {% for s in socios %}<option value="{{ s.id }}" {{ 'selected' if sel == s.id }}>{{ s.apellidos }} {{ s.nombres }} ({{ s.cedula }})</option>{% endfor %}</select>
+  <div class="row">
+    <div><label>Mes que paga</label><input type="month" name="mes" value="{{ mes }}" required></div>
+    <div><label>Fecha del pago</label><input type="date" name="fecha" value="{{ hoy }}" required></div>
+  </div>
+  <div class="row">
+    <div style="flex:2"><label>Concepto</label><input name="concepto" value="{{ concepto }}" required></div>
+    <div><label>Monto ($)</label><input name="monto" value="{{ cuota }}" required></div>
+    <div><label>Forma de pago</label><select name="forma_pago"><option>efectivo</option><option>transferencia</option><option>depósito</option></select></div>
+  </div>
+  <label>Observación (opcional)</label><input name="observacion">
+  <button class="btn">Guardar y generar recibo</button> <a class="btn ghost" href="{{ url_for('pagos') }}">Cancelar</a>
+</form>
+{% endblock %}
